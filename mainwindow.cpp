@@ -628,7 +628,7 @@ void MainWindow::on_reset_clicked()
 
 void MainWindow::on_cridits_clicked()
 {
-    write("\n\n\nCridits: \n");
+    write("\n\n\nCredits: \n");
     QFile credits(QDir::current().absolutePath() + "/credits");
     if (!credits.open(QIODevice::ReadOnly))
     {
