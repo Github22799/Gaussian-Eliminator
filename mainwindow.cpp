@@ -475,7 +475,7 @@ void MainWindow::solve()
         return;
     }else if (eq < vars)
     {
-        write("The number of equations is less than the number of variables, No enough information, Cannot proceed.\n\n");
+        write("The number of equations is less than the number of variables, Not enough information, Cannot proceed.\n\n");
         return;
     }
 
@@ -512,7 +512,7 @@ void MainWindow::solve()
 
         if (numOfEq < vars && canProceed)
         {
-            write("The number of equations is less than the number of variables, No enough information, Cannot proceed.\n\n");
+            write("The number of equations is less than the number of variables, Not enough information, Cannot proceed.\n\n");
             canProceed = false;
         }
 
