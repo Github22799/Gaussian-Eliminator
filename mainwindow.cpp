@@ -631,7 +631,7 @@ void MainWindow::applyOnNonZeroInRow(int n)
         {
             val = -arr[i][n]/arr[n][n];
             multAndAddColumn(n, val, i);
-            printAndCopy("C" + QString::number(i+1) + " = C" + QString::number(i+1) + " + C" + QString::number(n+1) + " * " + getRational(val), "");
+            printAndCopy("R" + QString::number(i+1) + " = R" + QString::number(i+1) + " + R" + QString::number(n+1) + " * " + getRational(val), "");
         }
     }
 }
