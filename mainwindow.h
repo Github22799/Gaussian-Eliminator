@@ -30,7 +30,13 @@ public:
     void reset1();
     void reset2();
     bool allValuesInRowIsZero(int row);
+    void printResults(bool canProceed);
     void addRow(int i);
+    bool solve1();
+    void solve2();
+    void applyOnNonZeroInRow(int n);
+    void multAndAddColumn(int c1, rational<int> val, int c2);
+
 
 private slots:
     void on_setVarNum_clicked();
@@ -48,6 +54,8 @@ private slots:
     void on_equations_currentIndexChanged(int index);
 
     void on_remove_clicked();
+
+    void on_jordan_clicked();
 
 private:
     Ui::MainWindow *ui;

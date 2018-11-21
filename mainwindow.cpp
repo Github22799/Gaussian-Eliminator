@@ -40,6 +40,7 @@ void MainWindow::reset1()
         ui->steps->clear();
 
     }
+    NotFirstTime = false;
 
 }
 
@@ -52,6 +53,7 @@ void MainWindow::reset2()
     ui->add->setEnabled(false);
     ui->setVarNum->setEnabled(true);
     ui->solve->setEnabled(false);
+    ui->jordan->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -65,6 +67,7 @@ void MainWindow::on_setVarNum_clicked()
     ui->setVarNum->setEnabled(false);
     ui->reset->setEnabled(true);
     ui->solve->setEnabled(true);
+    ui->jordan->setEnabled(true);
     vars = ui->varNum->value();
     ui->equations->clear();
 }
@@ -464,82 +467,9 @@ bool allZerosFrom(int index)
     return true;
 }
 
-void MainWindow::solve()
+void MainWindow::printResults(bool canProceed)
 {
-    reset1();
-    init();
-
-    if (eq == 0)
-    {
-        write("Add at least " + QString::number(vars) + " equations.\n\n");
-        return;
-    }else if (eq < vars)
-    {
-        write("The number of equations is less than the number of variables, No enough information, Cannot proceed.\n\n");
-        return;
-    }
-
-    bool canProceed = true;
-
-    int numOfEq = eq;
-
-    NotFirstTime = true;
-
-
-    int counter = 0;
     QString text;
-    while (lastColumn < vars && lastRow < eq && canProceed)
-    {
-        counter++;
-
-        if (allValuesInRowIsZero(lastRow))
-        {
-            if (arr[lastRow][vars] == 0)
-            {
-                numOfEq--;
-                if (lastRow != eq - 1 && !allZerosFrom(lastRow))
-                {
-                    write("Row " + QString::number(lastRow+1) + " will be moved to the buttom for the ease of reading.\n\n");
-                    moveRowToTheButtom(lastRow);
-                }
-            }
-            else
-            {
-                write("The function number " + QString::number(lastRow+1) + " is indicating that sum of zeroes is " + getRational(arr[lastRow][vars]) + " which is wrong. Cannot proceed.\n\n");
-                canProceed = false;
-            }
-        }
-
-        if (numOfEq < vars && canProceed)
-        {
-            write("The number of equations is less than the number of variables, No enough information, Cannot proceed.\n\n");
-            canProceed = false;
-        }
-
-        if (!canProceed) break;
-
-        setNextColumn();
-
-        write("Row Number " + QString::number(counter) + ":════════════════════\n\n");
-
-        copyArr();
-
-        text = CheckIfAllZeroesAndSwap();
-        printAndCopy(text, "Substituting M[" + QString::number(lastRow+1) + ',' + QString::number(lastColumn+1) + "] with a non-zero element");
-
-        text = setToOne();
-        printAndCopy(text, "Transforming m[" + QString::number(lastRow+1) + ',' + QString::number(lastColumn+1) + "] to 1");
-
-        setRemainingToZero();
-
-        write("\n\n");
-
-        if (lastColumn >= vars || lastRow >= eq) break;
-
-        lastColumn++;
-        lastRow++;
-    }
-
     if (canProceed)
     {
         write("Final Matrix:\n");
@@ -590,13 +520,133 @@ void MainWindow::solve()
             write("x" + QString::number(i+1) + " = ∞.\n");
         }
     }
+}
+
+bool MainWindow::solve1()
+{
+    reset1();
+    init();
+
+    if (eq == 0)
+    {
+        write("Add at least " + QString::number(vars) + " equations.\n\n");
+        return false;
+    }else if (eq < vars)
+    {
+        write("The number of equations is less than the number of variables, No enough information, Cannot proceed.\n\n");
+        return false;
+    }
+
+    bool canProceed = true;
+
+    int numOfEq = eq;
+
+    NotFirstTime = true;
 
 
+    int counter = 0;
+    QString text;
+    while (lastColumn < vars && lastRow < eq && canProceed)
+    {
+        counter++;
+
+        if (allValuesInRowIsZero(lastRow))
+        {
+            if (arr[lastRow][vars] == 0)
+            {
+                numOfEq--;
+                if (lastRow != eq - 1 && !allZerosFrom(lastRow))
+                {
+                    write("Row " + QString::number(lastRow+1) + " will be moved to the buttom for the ease of reading.\n\n");
+                    moveRowToTheButtom(lastRow);
+                }
+            }
+            else
+            {
+                write("The function number " + QString::number(lastRow+1) + " is indicating that sum of zeroes is " + getRational(arr[lastRow][vars]) + " which is wrong. Cannot proceed.\n\n");
+                canProceed = false;
+            }
+        }
+
+        if (numOfEq < vars && canProceed)
+        {
+            write("The number of equations is less than the number of variables, No enough information, Cannot proceed.\n\n");
+            canProceed = false;
+        }
+
+        if (!canProceed) break;
+
+        setNextColumn();
+
+        copyArr();
+
+        bool writeRowNumber = false;
+
+        text = CheckIfAllZeroesAndSwap();
+
+        if (text != "" && !writeRowNumber)
+        {
+            writeRowNumber = true;
+            write("Row Number " + QString::number(counter) + ":════════════════════\n\n");
+        }
+
+        printAndCopy(text, "Substituting M[" + QString::number(lastRow+1) + ',' + QString::number(lastColumn+1) + "] with a non-zero element");
+
+        text = setToOne();
+
+        if (text != "" && !writeRowNumber)
+        {
+            writeRowNumber = true;
+            write("Row Number " + QString::number(counter) + ":════════════════════\n\n");
+        }
+
+        printAndCopy(text, "Transforming m[" + QString::number(lastRow+1) + ',' + QString::number(lastColumn+1) + "] to 1");
+
+        setRemainingToZero();
+
+        write("\n\n");
+
+        if (lastColumn >= vars || lastRow >= eq) break;
+
+        lastColumn++;
+        lastRow++;
+    }
+    return canProceed;
+}
+
+void MainWindow::multAndAddColumn(int c1, rational<int> val, int c2)
+{
+    for (int i = 0; i <= vars; i++)
+    {
+        arr[c2][i] += arr[c1][i] * val;
+    }
+}
+
+void MainWindow::applyOnNonZeroInRow(int n)
+{
+    rational<int> val;
+    for (int i = n-1; i >= 0; i--)
+    {
+        if (arr[i][n] != 0)
+        {
+            val = -arr[i][n]/arr[n][n];
+            multAndAddColumn(n, val, i);
+            printAndCopy("C" + QString::number(i+1) + " = C" + QString::number(i+1) + " + C" + QString::number(n+1) + " * " + getRational(val), "");
+        }
+    }
+}
+
+void MainWindow::solve2()
+{
+    for (int i = vars-1; i >= 0; i--)
+    {
+        applyOnNonZeroInRow(i);
+    }
 }
 
 void MainWindow::on_solve_clicked()
 {
-    solve();
+    printResults(solve1());
 }
 
 void MainWindow::on_reset_clicked()
@@ -663,4 +713,11 @@ void MainWindow::on_remove_clicked()
         ui->update->setEnabled(false);
         ui->remove->setEnabled(false);
     }
+}
+
+void MainWindow::on_jordan_clicked()
+{
+    bool canProceed = solve1();
+    solve2();
+    printResults(canProceed);
 }
