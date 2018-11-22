@@ -637,7 +637,7 @@ void MainWindow::applyOnNonZeroInRow(int n)
                 val = -arr[i][n]/arr[n][n];
             multAndAddColumn(n, val, i);
 
-            std::string s1 = "Remove all the elements above the leading one in column ";
+            std::string s1 = "Removing all the elements above the leading one in column ";
             std::string s2 = std::to_string(n+1);
             std::string s3 = s1 + s2;
             char const *pchar = s3.c_str();
