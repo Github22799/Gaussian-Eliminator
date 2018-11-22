@@ -11,7 +11,7 @@ using boost::rational;
 int vars = 0, eq = 0, lastColumn = 0, lastRow = 0, currIndex = 0;
 rational<int> **arr, **copy, *results;
 QString console = "";
-bool NotFirstTime = false;
+bool NotFirstTime = false, infflag = false;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -500,7 +500,7 @@ void MainWindow::printResults(bool canProceed)
             write(text + "\n");
             if (text != simplified) write(simplified + "\n");
             simplified = "x" + QString::number(lastColumn+1) + " = " + getRational(res);
-            if (text != simplified) write(simplified + ".\n");
+            if (text != simplified) write(simplified + "\n");
             write("\n");
         }
 
@@ -517,7 +517,7 @@ void MainWindow::printResults(bool canProceed)
         for (int i = 0; i < vars; i++)
         {
             ui->results->addItem("x" + QString::number(i+1) + " = ∞");
-            write("x" + QString::number(i+1) + " = ∞.\n");
+            write("x" + QString::number(i+1) + " = ∞\n");
         }
     }
 }
@@ -533,7 +533,8 @@ bool MainWindow::solve1()
         return false;
     }else if (eq < vars)
     {
-        write("The number of equations is less than the number of variables, No enough information, Cannot proceed.\n\n");
+        write("The number of equations is less than the number of variables, Not enough information, Cannot proceed.\n\n");
+        infflag = true;
         return false;
     }
 
@@ -570,7 +571,8 @@ bool MainWindow::solve1()
 
         if (numOfEq < vars && canProceed)
         {
-            write("The number of equations is less than the number of variables, No enough information, Cannot proceed.\n\n");
+            write("The number of equations is less than the number of variables, Not enough information, Cannot proceed.\n\n");
+            infflag = true;
             canProceed = false;
         }
 
@@ -629,17 +631,27 @@ void MainWindow::applyOnNonZeroInRow(int n)
     {
         if (arr[i][n] != 0)
         {
-            val = -arr[i][n]/arr[n][n];
+            if (arr[n][n] == 0)
+                val = 0;
+            else
+                val = -arr[i][n]/arr[n][n];
             multAndAddColumn(n, val, i);
-            printAndCopy("R" + QString::number(i+1) + " = R" + QString::number(i+1) + " + R" + QString::number(n+1) + " * " + getRational(val), "");
+
+            std::string s1 = "Remove all the elements above the leading one in column ";
+            std::string s2 = std::to_string(n+1);
+            std::string s3 = s1 + s2;
+            char const *pchar = s3.c_str();
+
+            printAndCopy("R" + QString::number(i+1) + " = R" + QString::number(i+1) + " + R" + QString::number(n+1) + " * " + getRational(val), pchar);
         }
     }
 }
 
-void MainWindow::solve2()
+void MainWindow::jordan()
 {
     for (int i = vars-1; i >= 0; i--)
     {
+        if (infflag) break;
         applyOnNonZeroInRow(i);
     }
 }
@@ -718,6 +730,6 @@ void MainWindow::on_remove_clicked()
 void MainWindow::on_jordan_clicked()
 {
     bool canProceed = solve1();
-    solve2();
+    jordan();
     printResults(canProceed);
 }
